@@ -3,8 +3,29 @@ $(function() {
   function Complex(real, imag) {
     this.real = real;
     this.imag = imag;
-    this.abs = Math.sqrt(this.real * this.real + this.imag * this.imag);
-    this.arg = Math.atan2(this.imag, this.real);
+
+    this.re = function(real) {
+      if (real === undefined)
+        return this.real;
+      this.real = real;
+      this.calcPolar();
+    };
+
+    this.im = function(imag) {
+      if (imag === undefined)
+        return this.imag;
+      this.imag = imag;
+      this.calcPolar();
+    };
+
+    this.calcPolar = function() {
+      this.abs = Math.sqrt(this.real * this.real + this.imag * this.imag);
+      this.arg = Math.atan2(this.imag, this.real);
+    };
+
+    this.mult = function(z) {
+      return new Complex(this.real * z.real - this.imag * z.imag, this.real * z.imag + this.imag * z.real);
+    };
 
     this.dist = function(z) {
       if (Complex.isNaN(this) || Complex.isNaN(z))
@@ -27,6 +48,8 @@ $(function() {
     this.toString = function() {
       return real + ' + ' + imag + 'i';
     };
+
+    this.calcPolar();
   }
   Complex.NaN = new Complex(Number.NaN, Number.NaN);
   Complex.isNaN = function(z) {
@@ -49,19 +72,22 @@ $(function() {
           .append('g')
           .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-  var pts = [];
-  var lines = [];
-  {
-    var z = new Complex(2, 0);
+  var pts, lines;
+  var start = new Complex(2, 0);
+  var factor = new Complex(1, 0);
+  function calcData() {
+    pts = [];
+    lines = [];
+    var z = start;
     var prev = null;
     var f = function(z) {
-      return z.log();
+      return factor.mult(z.log());
     };
     for (var i = 0; i < 100; i++) {
       if (z === Complex.NaN)
         break;
       if (prev !== null && z.dist(prev) < convergence) {
-        console.log('converge');
+//        console.log('converge');
         break;
       }
       pts.push(z);
@@ -70,6 +96,7 @@ $(function() {
       lines.push({ 'prev': prev, 'curr': z });
     }
   }
+  calcData();
 
   var xScale = d3.scale.linear()
           .domain([-graphExtent, graphExtent])
@@ -97,41 +124,70 @@ $(function() {
           .attr('class', 'axis imag-axis')
           .call(yAxis);
 
-  svg.selectAll('.data-point')
-          .data(pts)
-          .enter()
-          .append('circle')
-          .attr('class', 'data-point')
-          .attr('cx', function(d, i) {
-            return xScale(d.real);
+  var drag = d3.behavior.drag()
+          .origin(function(d) {
+            return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
           })
-          .attr('cy', function(d, i) {
-            return yScale(d.imag);
-          })
-          .attr('r', 3)
-          .attr('fill', function(d, i) {
-            return colorScale(i);
+          .on('drag', function(d) {
+            factor.re(xScale.invert(d3.event.x));
+            factor.im(yScale.invert(d3.event.y));
+            calcData();
+            drawData();
           });
-  svg.selectAll('.data-line')
-          .data(lines)
-          .enter()
-          .append('line')
-          .attr('class', 'data-line')
-          .attr('x1', function(d, i) {
-            return xScale(d.prev.real);
-          })
-          .attr('y1', function(d, i) {
-            return yScale(d.prev.imag);
-          })
-          .attr('x2', function(d, i) {
-            return xScale(d.curr.real);
-          })
-          .attr('y2', function(d, i) {
-            return yScale(d.curr.imag);
-          })
-          .attr('stroke', function(d, i) {
-            return colorScale(i);
-          });
+
+  function drawData() {
+    svg.selectAll('.data-line').remove();
+    svg.selectAll('.data-point').remove();
+    svg.selectAll('.handle-point').remove();
+    svg.selectAll('.data-line')
+            .data(lines)
+            .enter()
+            .append('line')
+            .attr('class', 'data-line')
+            .attr('x1', function(d, i) {
+              return xScale(d.prev.re());
+            })
+            .attr('y1', function(d, i) {
+              return yScale(d.prev.im());
+            })
+            .attr('x2', function(d, i) {
+              return xScale(d.curr.re());
+            })
+            .attr('y2', function(d, i) {
+              return yScale(d.curr.im());
+            })
+            .attr('stroke', function(d, i) {
+              return colorScale(i);
+            });
+    svg.selectAll('.data-point')
+            .data(pts)
+            .enter()
+            .append('circle')
+            .attr('class', 'data-point')
+            .attr('cx', function(d, i) {
+              return xScale(d.re());
+            })
+            .attr('cy', function(d, i) {
+              return yScale(d.im());
+            })
+            .attr('r', 3)
+            .attr('fill', function(d, i) {
+              return colorScale(i);
+            });
+    svg.append('circle')
+            .datum(factor)
+            .attr('class', 'handle-point')
+            .attr('cx', function(d, i) {
+              return xScale(d.re());
+            })
+            .attr('cy', function(d, i) {
+              return yScale(d.im());
+            })
+            .attr('r', 7);
+    svg.select('.handle-point')
+            .call(drag);
+  }
+  drawData();
 
   $('#graph .imag-axis .tick text').html(function(index, old) {
     function sp(t) {
