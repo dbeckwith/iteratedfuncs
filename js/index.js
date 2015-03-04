@@ -1,3 +1,7 @@
+function updateTex() {
+  MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+}
+
 $(function() {
 
   function Complex(real, imag) {
@@ -215,7 +219,7 @@ $(function() {
     }
   ];
   function getFuncDescrip(func) {
-    return '\\(f\\!\\left(z\\right) = ' + func.descrip + '\\)';
+    return '\\[f\\!\\left(z\\right) = ' + func.descrip + '\\]';
   }
 
   var gw = 500;
@@ -367,5 +371,8 @@ $(function() {
       return sp('-') + i;
     return sp(n) + i;
   });
+
+  $('#funcDescrip').text(getFuncDescrip(func));
+  updateTex();
 
 });
