@@ -133,63 +133,104 @@ $(function() {
   };
 
   var functions = [
-    function(z, a) {
-      return a.div(new Complex(1).add(z));
+    {
+      'f': function(z, a) {
+        return a.div(new Complex(1).add(z));
+      },
+      'start': new Complex(1),
+      'factor': new Complex(1)
     },
-    function(z, a) {
-      return a.add(z).recip();
+    {
+      'f': function(z, a) {
+        return a.add(z).recip();
+      },
+      'start': new Complex(1),
+      'factor': new Complex(1)
     },
-    function(z, a) {
-      return z.div(a.sub(z));
+    {
+      'f': function(z, a) {
+        return z.div(a.sub(z));
+      },
+      'start': new Complex(1),
+      'factor': new Complex(1)
     },
-    function(z, a) {
-      return z.sqr().add(a);
+    {
+      'f': function(z, a) {
+        return z.sqr().add(a);
+      },
+      'start': new Complex(0),
+      'factor': new Complex(0)
     },
-    function(z, a) {
-      return z.pwr(new Complex(3)).add(a);
+    {
+      'f': function(z, a) {
+        return z.pwr(new Complex(3)).add(a);
+      },
+      'start': new Complex(0),
+      'factor': new Complex(0)
     },
-    function(z, a) {
-      return z.pwr(new Complex(4)).add(a);
+    {
+      'f': function(z, a) {
+        return z.pwr(new Complex(4)).add(a);
+      },
+      'start': new Complex(0),
+      'factor': new Complex(0)
     },
-    function(z, a) {
-      return a.mult(z.sin());
+    {
+      'f': function(z, a) {
+        return a.mult(z.sin());
+      },
+      'start': new Complex(1),
+      'factor': new Complex(1)
     },
-    function(z, a) {
-      return a.mult(z.cos());
+    {
+      'f': function(z, a) {
+        return a.mult(z.cos());
+      },
+      'start': new Complex(0),
+      'factor': new Complex(1)
     },
-    function(z, a) {
-      return a.mult(z.tan());
+    {
+      'f': function(z, a) {
+        return a.mult(z.tan());
+      },
+      'start': new Complex(1),
+      'factor': new Complex(1)
     },
-    function(z, a) {
-      return a.mult(z.log());
+    {
+      'f': function(z, a) {
+        return a.mult(z.log());
+      },
+      'start': new Complex(2),
+      'factor': new Complex(1)
     }
+
   ];
 
   var gw = 500;
   var gh = 500;
   var graphExtent = 4;
-  var margin = { bottom: 35, left: 35, top: 15, right: 15 };
+  var convergence = 1e-2;
+
+  var svg = d3.select('#graph');
+
+  var w = $('#graph').width();
+  var h = $('#graph').height();
+
+  var margin = { bottom: 35, left: w / 2 - gw / 2, top: 15, right: w / 2 - gw / 2 };
   margin.x = margin.left + margin.right;
   margin.y = margin.top + margin.bottom;
-  var convergence = 1e-2;
-  var w = gw + margin.x;
-  var h = gh + margin.y;
 
-  var svg = d3.select('#graph')
-          .attr('width', w)
-          .attr('height', h)
-          .append('g')
-          .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+  svg = svg.append('g').attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
   var pts, lines;
-  var start = new Complex(2, 0);
-  var factor = new Complex(1, 0);
+  var func = functions[0];
+  var start = func.start;
+  var factor = func.factor;
   function calcData() {
     pts = [];
     lines = [];
     var z = start;
     var prev = null;
-    var f = functions[0];
     for (var i = 0; i < 500; i++) {
       if (z === Complex.NaN)
         break;
@@ -199,7 +240,7 @@ $(function() {
       }
       pts.push(z);
       prev = z;
-      z = f(z, factor);
+      z = func.f(z, factor);
       lines.push({ 'prev': prev, 'curr': z });
     }
   }
@@ -292,7 +333,8 @@ $(function() {
             .attr('cy', function(d, i) {
               return yScale(d.im());
             })
-            .attr('r', 7);
+            .attr('r', 7)
+            .attr('opacity', 0.7);
     svg.select('.handle-point')
             .call(drag);
   }
