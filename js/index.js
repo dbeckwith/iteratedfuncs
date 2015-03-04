@@ -19,8 +19,10 @@ $(function() {
     };
 
     this.calcPolar = function() {
-      this.abs = Math.sqrt(this.real * this.real + this.imag * this.imag);
-      this.arg = Math.atan2(this.imag, this.real);
+      if (this.real !== undefined && this.imag !== undefined) {
+        this.abs = Math.sqrt(this.real * this.real + this.imag * this.imag);
+        this.arg = Math.atan2(this.imag, this.real);
+      }
     };
 
     this.add = function(z) {
@@ -52,10 +54,53 @@ $(function() {
       return (this.real - z.real) * (this.real - z.real) + (this.imag - z.imag) * (this.imag - z.imag);
     };
 
+    this.conj = function() {
+      return new Complex(this.real, -this.imag);
+    };
+
+    this.recip = function() {
+      var denom = this.real * this.real + this.imag * this.imag;
+      return new Complex(this.real / denom, -this.imag / denom);
+    };
+
+    this.neg = function() {
+      return new Complex(this.real, this.imag);
+    };
+
+    this.sqr = function() {
+      return new Complex(this.real * this.real - this.imag * this.imag, 2 * this.real * this.imag);
+    };
+
+    this.sqrt = function() {
+      return new Complex(Math.sqrt((this.abs + this.real) / 2), (this.imag < 0 ? -1 : 1) * (Math.sqrt(this.abs - this.real) / 2));
+    };
+
+    this.pwr = function(z) {
+      if (this.abs === 0)
+        return Complex.NaN;
+      return Complex.fromPolar(Math.pow(this.abs, z.real) * Math.exp(-this.arg * z.imag), z.imag * Math.log(abs) + z.real * this.arg);
+    };
+
+    this.exp = function() {
+      return Complex.fromPolar(Math.exp(this.real), this.imag);
+    };
+
     this.log = function() {
       if (this.abs === 0)
         return Complex.NaN;
       return new Complex(Math.log(this.abs), this.arg);
+    };
+
+    this.sin = function() {
+      return new Complex((Math.exp(-this.imag) * Math.sin(this.real) - Math.exp(this.imag) * Math.sin(-this.real)) / 2, (-Math.exp(-this.imag) * Math.cos(this.real) + Math.exp(this.imag) * Math.cos(-this.real)) / 2);
+    };
+
+    this.cos = function() {
+      return new Complex((Math.exp(-this.imag) * Math.cos(this.real) + Math.exp(this.imag) * Math.cos(-this.real)) / 2, (Math.exp(-this.imag) * Math.sin(this.real) + Math.exp(this.imag) * Math.sin(-this.real)) / 2);
+    };
+
+    this.tan = function() {
+      return this.sin().div(this.cos());
     };
 
     this.toString = function() {
@@ -67,6 +112,14 @@ $(function() {
   Complex.NaN = new Complex(Number.NaN, Number.NaN);
   Complex.isNaN = function(z) {
     return Number.isNaN(z.real) || Number.isNaN(z.imag);
+  };
+  Complex.fromPolar = function(r, t) {
+    var z = new Complex();
+    z.real = r * Math.cos(t);
+    z.imag = r * Math.sin(t);
+    z.abs = r;
+    z.arg = t;
+    return z;
   };
 
   var gw = 500;
