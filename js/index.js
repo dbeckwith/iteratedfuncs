@@ -134,77 +134,89 @@ $(function() {
 
   var functions = [
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return a.div(new Complex(1).add(z));
       },
-      'start': new Complex(1),
-      'factor': new Complex(1)
+      start: new Complex(1),
+      factor: new Complex(1),
+      descrip: '\\frac a {1 + z}'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return a.add(z).recip();
       },
-      'start': new Complex(1),
-      'factor': new Complex(1)
+      start: new Complex(1),
+      factor: new Complex(1),
+      descrip: '\\frac 1 {a + z}'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return z.div(a.sub(z));
       },
-      'start': new Complex(1),
-      'factor': new Complex(1)
+      start: new Complex(1),
+      factor: new Complex(1),
+      descrip: '\\frac z {a - z}'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return z.sqr().add(a);
       },
-      'start': new Complex(0),
-      'factor': new Complex(0)
+      start: new Complex(0),
+      factor: new Complex(0),
+      descrip: 'z^2 + a'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return z.pwr(new Complex(3)).add(a);
       },
-      'start': new Complex(0),
-      'factor': new Complex(0)
+      start: new Complex(0),
+      factor: new Complex(0),
+      descrip: 'z^3 + a'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return z.pwr(new Complex(4)).add(a);
       },
-      'start': new Complex(0),
-      'factor': new Complex(0)
+      start: new Complex(0),
+      factor: new Complex(0),
+      descrip: 'z^4 + a'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return a.mult(z.sin());
       },
-      'start': new Complex(1),
-      'factor': new Complex(1)
+      start: new Complex(1),
+      factor: new Complex(1),
+      descrip: 'a \\sin z'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return a.mult(z.cos());
       },
-      'start': new Complex(0),
-      'factor': new Complex(1)
+      start: new Complex(0),
+      factor: new Complex(1),
+      descrip: 'a \\cos z'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return a.mult(z.tan());
       },
-      'start': new Complex(1),
-      'factor': new Complex(1)
+      start: new Complex(1),
+      factor: new Complex(1),
+      descrip: 'a \\tan z'
     },
     {
-      'f': function(z, a) {
+      f: function(z, a) {
         return a.mult(z.log());
       },
-      'start': new Complex(2),
-      'factor': new Complex(1)
+      start: new Complex(2),
+      factor: new Complex(1),
+      descrip: 'a \\ln z'
     }
-
   ];
+  function getFuncDescrip(func) {
+    return '\\(f\\!\\left(z\\right) = ' + func.descrip + '\\)';
+  }
 
   var gw = 500;
   var gh = 500;
