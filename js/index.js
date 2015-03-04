@@ -23,8 +23,21 @@ $(function() {
       this.arg = Math.atan2(this.imag, this.real);
     };
 
+    this.add = function(z) {
+      return new Complex(this.real + z.real, this.imag + z.imag);
+    };
+
+    this.sub = function(z) {
+      return new Complex(this.real - z.real, this.imag - z.imag);
+    };
+
     this.mult = function(z) {
       return new Complex(this.real * z.real - this.imag * z.imag, this.real * z.imag + this.imag * z.real);
+    };
+
+    this.div = function(z) {
+      var denom = z.real * z.real + z.imag * z.imag;
+      return new Complex((this.real * z.real + this.imag * z.imag) / denom, (this.imag * z.real - this.real * z.imag) / denom);
     };
 
     this.dist = function(z) {
@@ -81,9 +94,9 @@ $(function() {
     var z = start;
     var prev = null;
     var f = function(z) {
-      return factor.mult(z.log());
+      return factor.div(new Complex(1, 0).add(z));
     };
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 500; i++) {
       if (z === Complex.NaN)
         break;
       if (prev !== null && z.dist(prev) < convergence) {
@@ -104,9 +117,6 @@ $(function() {
   var yScale = d3.scale.linear()
           .domain([-graphExtent, graphExtent])
           .range([gh, 0]);
-  var colorScale = d3.scale.linear()
-          .domain([0, pts.length])
-          .range(['#1f77b4', '#d62728']);
 
   var xAxis = d3.svg.axis()
           .scale(xScale)
@@ -139,6 +149,9 @@ $(function() {
     svg.selectAll('.data-line').remove();
     svg.selectAll('.data-point').remove();
     svg.selectAll('.handle-point').remove();
+    var colorScale = d3.scale.linear()
+            .domain(d3.range(0, pts.length, pts.length / 6))
+            .range(['#d62728', '#ff7f0e', '#2ca02c', '#17becf', '#1f77b4', '#9467bd']);
     svg.selectAll('.data-line')
             .data(lines)
             .enter()
@@ -158,7 +171,8 @@ $(function() {
             })
             .attr('stroke', function(d, i) {
               return colorScale(i);
-            });
+            })
+            .attr('opacity', 0.5);
     svg.selectAll('.data-point')
             .data(pts)
             .enter()
@@ -173,7 +187,8 @@ $(function() {
             .attr('r', 3)
             .attr('fill', function(d, i) {
               return colorScale(i);
-            });
+            })
+            .attr('opacity', 0.5);
     svg.append('circle')
             .datum(factor)
             .attr('class', 'handle-point')
