@@ -3,6 +3,27 @@
     Author     : Daniel Beckwith <sonaxaton.net>
 */
 
-#test {
-    background-color: black;
+#graph {
+    background-color: white;
+}
+
+#graph .axis path,
+#graph .axis line {
+    fill: none;
+    stroke: hsl(0, 0%, 60%);
+    shape-rendering: crispEdges;
+}
+
+#graph .axis .tick line {
+    stroke: hsl(0, 0%, 80%);
+}
+
+#graph .axis text {
+    fill: hsl(0, 0%, 40%);
+    font-family: 'Book Antiqua', 'Lora', serif;
+    font-size: 14px;
+}
+
+#graph .axis .tick text tspan.math {
+    font-style: italic;
 }

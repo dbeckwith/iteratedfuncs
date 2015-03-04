@@ -33,16 +33,24 @@ $(function() {
     return Number.isNaN(z.real) || Number.isNaN(z.imag);
   };
 
-  var w = 500;
-  var h = 500;
+  var gw = 500;
+  var gh = 500;
   var graphExtent = 4;
+  var margin = { bottom: 35, left: 35, top: 15, right: 15 };
+  margin.x = margin.left + margin.right;
+  margin.y = margin.top + margin.bottom;
   var convergence = 1e-2;
+  var w = gw + margin.x;
+  var h = gh + margin.y;
 
-  var svg = d3.select('#test')
+  var svg = d3.select('#graph')
           .attr('width', w)
-          .attr('height', h);
+          .attr('height', h)
+          .append('g')
+          .attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
   var pts = [];
+  var lines = [];
   {
     var z = new Complex(2, 0);
     var prev = null;
@@ -56,26 +64,44 @@ $(function() {
         console.log('converge');
         break;
       }
-      prev = z;
       pts.push(z);
+      prev = z;
       z = f(z);
+      lines.push({ 'prev': prev, 'curr': z });
     }
   }
 
   var xScale = d3.scale.linear()
           .domain([-graphExtent, graphExtent])
-          .range([0, w]);
+          .range([0, gw]);
   var yScale = d3.scale.linear()
           .domain([-graphExtent, graphExtent])
-          .range([h, 0]);
+          .range([gh, 0]);
   var colorScale = d3.scale.linear()
           .domain([0, pts.length])
           .range(['#1f77b4', '#d62728']);
 
-  svg.selectAll('circle')
+  var xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient('bottom')
+          .tickSize(-gh);
+  svg.append('g')
+          .attr('class', 'axis real-axis')
+          .attr('transform', 'translate(0, ' + gh + ')')
+          .call(xAxis);
+  var yAxis = d3.svg.axis()
+          .scale(yScale)
+          .orient('left')
+          .tickSize(-gw);
+  svg.append('g')
+          .attr('class', 'axis imag-axis')
+          .call(yAxis);
+
+  svg.selectAll('.data-point')
           .data(pts)
           .enter()
           .append('circle')
+          .attr('class', 'data-point')
           .attr('cx', function(d, i) {
             return xScale(d.real);
           })
@@ -86,5 +112,41 @@ $(function() {
           .attr('fill', function(d, i) {
             return colorScale(i);
           });
+  svg.selectAll('.data-line')
+          .data(lines)
+          .enter()
+          .append('line')
+          .attr('class', 'data-line')
+          .attr('x1', function(d, i) {
+            return xScale(d.prev.real);
+          })
+          .attr('y1', function(d, i) {
+            return yScale(d.prev.imag);
+          })
+          .attr('x2', function(d, i) {
+            return xScale(d.curr.real);
+          })
+          .attr('y2', function(d, i) {
+            return yScale(d.curr.imag);
+          })
+          .attr('stroke', function(d, i) {
+            return colorScale(i);
+          });
+
+  $('#graph .imag-axis .tick text').html(function(index, old) {
+    function sp(t) {
+      return '<tspan>' + t + '</tspan>';
+    }
+    var i = '<tspan class="math">i</tspan>';
+    var n = parseInt(old);
+    if (n === 0) {
+      return sp(n);
+    }
+    if (n === 1)
+      return i;
+    if (n === -1)
+      return sp('-') + i;
+    return sp(n) + i;
+  });
 
 });
