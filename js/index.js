@@ -1,8 +1,14 @@
 $(function() {
 
   function Complex(real, imag) {
-    this.real = real;
-    this.imag = imag;
+    if (real === undefined)
+      this.real = 0;
+    else
+      this.real = real;
+    if (imag === undefined)
+      this.imag = 0;
+    else
+      this.imag = imag;
 
     this.re = function(real) {
       if (real === undefined)
@@ -19,7 +25,7 @@ $(function() {
     };
 
     this.calcPolar = function() {
-      if (this.real !== undefined && this.imag !== undefined) {
+      if (this.real !== null && this.imag !== null) {
         this.abs = Math.sqrt(this.real * this.real + this.imag * this.imag);
         this.arg = Math.atan2(this.imag, this.real);
       }
@@ -103,6 +109,10 @@ $(function() {
       return this.sin().div(this.cos());
     };
 
+    this.equals = function(z) {
+      return this.real === z.real && this.imag === z.imag;
+    };
+
     this.toString = function() {
       return real + ' + ' + imag + 'i';
     };
@@ -114,13 +124,46 @@ $(function() {
     return Number.isNaN(z.real) || Number.isNaN(z.imag);
   };
   Complex.fromPolar = function(r, t) {
-    var z = new Complex();
+    var z = new Complex(null, null);
     z.real = r * Math.cos(t);
     z.imag = r * Math.sin(t);
     z.abs = r;
     z.arg = t;
     return z;
   };
+
+  var functions = [
+    function(z, a) {
+      return a.div(new Complex(1).add(z));
+    },
+    function(z, a) {
+      return a.add(z).recip();
+    },
+    function(z, a) {
+      return z.div(a.sub(z));
+    },
+    function(z, a) {
+      return z.sqr().add(a);
+    },
+    function(z, a) {
+      return z.pwr(new Complex(3)).add(a);
+    },
+    function(z, a) {
+      return z.pwr(new Complex(4)).add(a);
+    },
+    function(z, a) {
+      return a.mult(z.sin());
+    },
+    function(z, a) {
+      return a.mult(z.cos());
+    },
+    function(z, a) {
+      return a.mult(z.tan());
+    },
+    function(z, a) {
+      return a.mult(z.log());
+    }
+  ];
 
   var gw = 500;
   var gh = 500;
@@ -146,9 +189,7 @@ $(function() {
     lines = [];
     var z = start;
     var prev = null;
-    var f = function(z) {
-      return factor.div(new Complex(1, 0).add(z));
-    };
+    var f = functions[0];
     for (var i = 0; i < 500; i++) {
       if (z === Complex.NaN)
         break;
@@ -158,7 +199,7 @@ $(function() {
       }
       pts.push(z);
       prev = z;
-      z = f(z);
+      z = f(z, factor);
       lines.push({ 'prev': prev, 'curr': z });
     }
   }
