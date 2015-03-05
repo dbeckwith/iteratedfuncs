@@ -1,3 +1,5 @@
+/* global d3, MathJax */
+
 function updateTex() {
   MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
 }
