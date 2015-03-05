@@ -29,3 +29,7 @@
 #graph .axis .tick text tspan.math {
     font-style: italic;
 }
+
+#funcDescrip {
+    font-size: 18pt;
+}

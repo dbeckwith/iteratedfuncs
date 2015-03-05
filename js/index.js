@@ -4,6 +4,8 @@ function updateTex() {
 
 $(function() {
 
+  // TODO: make start point separate from rest of graph, then can also be a control point in same class as factor pt
+
   function Complex(real, imag) {
     if (real === undefined)
       this.real = 0;
@@ -229,6 +231,7 @@ $(function() {
 
   var svg = d3.select('#graph');
 
+  // TODO: update dimensions when graph resizes
   var w = $('#graph').width();
   var h = $('#graph').height();
 
@@ -290,6 +293,7 @@ $(function() {
             return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
           })
           .on('drag', function(d) {
+            // TODO: can drag off screen
             factor.re(xScale.invert(d3.event.x));
             factor.im(yScale.invert(d3.event.y));
             calcData();
