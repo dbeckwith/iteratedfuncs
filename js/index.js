@@ -6,7 +6,6 @@ function updateTex() {
 
 $(function() {
 
-  // TODO: handle NaNs better
   var functions = [
     {
       f: function(z, a) {
@@ -117,14 +116,14 @@ $(function() {
     var z = start;
     var prev = null;
     for (var i = 0; i < 500; i++) {
-      if (z === Complex.NaN)
-        break;
       if (prev !== null && z.dist(prev) < convergence) {
 //        console.log('converge');
         break;
       }
       prev = z;
       z = func.f(z, factor);
+      if (Complex.isNaN(z))
+        break;
       lines.push({ 'prev': prev, 'curr': z });
     }
   }
@@ -162,8 +161,6 @@ $(function() {
 
   svg.append('g')
           .attr('class', 'func-points');
-
-  // TODO: make factor point and start point both be control points
 
   function drawData() {
     var colorScale = d3.scale.linear()
@@ -209,10 +206,10 @@ $(function() {
 
     svg.selectAll('.control-point')
             .attr('cx', function(d) {
-              return xScale(d.re());
+              return xScale(d.pt.re());
             })
             .attr('cy', function(d) {
-              return yScale(d.im());
+              return yScale(d.pt.im());
             });
   }
 
@@ -226,24 +223,54 @@ $(function() {
 
     var colorScale = d3.scale.category10()
             .domain(d3.range(2));
+    var sizeScale = d3.scale.ordinal()
+            .domain(d3.range(2))
+            .range([4, 6]);
     svg.selectAll('.control-point')
-            .data([start, factor]).enter()
+            .data([start, factor].map(function(curr) {
+              return { pt: curr, dragging: false };
+            }))
+            .enter()
             .append('circle')
             .attr('class', 'control-point')
-            .attr('r', 7)
+            .attr('r', function(d, i) {
+              return sizeScale(i);
+            })
             .attr('fill', function(d, i) {
               return colorScale(i);
             })
-            .attr('opacity', 0.7)
+            .attr('stroke-width', 0)
+            .attr('opacity', 0.9)
+            .on('mouseenter', function(d, i) {
+              if (!d.dragging)
+                d3.select(this).transition().duration(100)
+                        .attr('r', sizeScale(i) * 1.5)
+                        .attr('stroke', '#444')
+                        .attr('stroke-width', 1)
+                        .attr('opacity', 0.6);
+            })
+            .on('mouseleave', function(d, i) {
+              if (!d.dragging)
+                d3.select(this).transition().duration(100)
+                        .attr('r', sizeScale(i))
+                        .attr('stroke-width', 0)
+                        .attr('opacity', 0.9);
+            })
             .call(d3.behavior.drag()
                     .origin(function(d) {
-                      return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
+                      return { 'x': xScale(d.pt.re()), 'y': yScale(d.pt.im()) };
                     })
                     .on('drag', function(d) {
-                      d.re(dragXScale.invert(d3.event.x));
-                      d.im(dragYScale.invert(d3.event.y));
+                      d.pt.re(dragXScale.invert(d3.event.x));
+                      d.pt.im(dragYScale.invert(d3.event.y));
                       calcData();
                       drawData();
+                    })
+                    .on('dragstart', function(d) {
+                      d.dragging = true;
+                    })
+                    .on('dragend', function(d) {
+                      d.dragging = false;
                     }));
 
     calcData();
