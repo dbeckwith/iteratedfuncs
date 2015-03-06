@@ -144,6 +144,15 @@ function Complex(real, imag) {
     return real + ' + ' + imag + 'i';
   };
 
+  this.copy = function() {
+    var z = new Complex(null, null);
+    z.real = this.real;
+    z.imag = this.imag;
+    z.abs = this.abs;
+    z.arg = this.arg;
+    return z;
+  };
+
   this.calcPolar();
 }
 

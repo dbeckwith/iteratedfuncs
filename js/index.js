@@ -164,19 +164,6 @@ $(function() {
           .attr('class', 'func-points');
 
   // TODO: make factor point and start point both be control points
-  svg.append('circle')
-          .attr('class', 'handle-point')
-          .attr('r', 7)
-          .attr('opacity', 0.7)
-          .call(d3.behavior.drag()
-                  .origin(function(d) {
-                    return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
-                  })
-                  .on('drag', function(d) {
-                    d3.select(this).datum(factor = new Complex(dragXScale.invert(d3.event.x), dragYScale.invert(d3.event.y)));
-                    calcData();
-                    drawData();
-                  }));
 
   function drawData() {
     var colorScale = d3.scale.linear()
@@ -220,7 +207,7 @@ $(function() {
 
     segments.exit().remove();
 
-    svg.select('.handle-point')
+    svg.selectAll('.control-point')
             .attr('cx', function(d) {
               return xScale(d.re());
             })
@@ -231,20 +218,33 @@ $(function() {
 
   function setFunction(i) {
     func = functions[i];
-    start = func.start;
-    factor = func.factor;
+    start = func.start.copy();
+    factor = func.factor.copy();
 
     $('#funcDescrip').text('\\[' + getFuncDescrip(func) + '\\]');
     updateTex();
 
-    svg.select('.handle-point')
-            .datum(factor)
-            .attr('cx', function(d) {
-              return xScale(d.re());
+    var colorScale = d3.scale.category10()
+            .domain(d3.range(2));
+    svg.selectAll('.control-point')
+            .data([start, factor]).enter()
+            .append('circle')
+            .attr('class', 'control-point')
+            .attr('r', 7)
+            .attr('fill', function(d, i) {
+              return colorScale(i);
             })
-            .attr('cy', function(d) {
-              return yScale(d.im());
-            });
+            .attr('opacity', 0.7)
+            .call(d3.behavior.drag()
+                    .origin(function(d) {
+                      return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
+                    })
+                    .on('drag', function(d) {
+                      d.re(dragXScale.invert(d3.event.x));
+                      d.im(dragYScale.invert(d3.event.y));
+                      calcData();
+                      drawData();
+                    }));
 
     calcData();
     drawData();
@@ -252,6 +252,7 @@ $(function() {
 
   setFunction(0);
 
+  // TODO: add circles to graph
   $('#graph .imag-axis .tick text').html(function(index, old) {
     function sp(t) {
       return '<tspan>' + t + '</tspan>';
