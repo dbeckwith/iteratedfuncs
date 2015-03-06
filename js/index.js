@@ -345,6 +345,7 @@ $(function() {
     drawData();
   }
 
+  // TODO: find better place for displays, on think screens can overlap graph too much
   svg.append('g')
           .attr('class', 'control-point-displays')
           .attr('transform', 'translate(4, 14)');

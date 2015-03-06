@@ -7,7 +7,7 @@
     background-color: white;
     width: 100%;
     height: 550px;
-    border: 1px solid black;
+    border: 1px solid black; /* for debugging */
 }
 
 #graph .axis path,
@@ -43,4 +43,15 @@
 
 #funcDescrip {
     font-size: 18pt;
+}
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen
+and (min-device-width : 320px)
+and (max-device-width : 480px) {
+    /* turn off crisp edges on smartphones */
+    #graph .axis path,
+    #graph .axis line {
+        shape-rendering: auto;
+    }
 }

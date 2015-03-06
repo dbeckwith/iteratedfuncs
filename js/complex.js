@@ -157,7 +157,6 @@ function Complex(real, imag) {
   };
 
   this.toString = function() {
-    // TODO: improve toString formatting
     return this.real + ' + ' + this.imag + 'i';
   };
 
