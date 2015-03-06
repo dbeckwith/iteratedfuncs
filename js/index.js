@@ -327,9 +327,7 @@ $(function() {
                       d.dragging = false;
                     }));
 
-    svg.append('g')
-            .attr('class', 'control-point-displays')
-            .attr('transform', 'translate(4, 14)')
+    svg.select('.control-point-displays')
             .selectAll('.control-point-display')
             .data(ctrlPts)
             .enter()
@@ -347,9 +345,12 @@ $(function() {
     drawData();
   }
 
+  svg.append('g')
+          .attr('class', 'control-point-displays')
+          .attr('transform', 'translate(4, 14)');
+
   setFunction(0);
 
-  // TODO: add circles to graph
   $('#graph .imag-axis .tick text').html(function(index, old) {
     function sp(t) {
       return '<tspan>' + t + '</tspan>';
