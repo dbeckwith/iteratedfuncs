@@ -1,15 +1,31 @@
+/**
+ * @author Daniel Beckwith <info@sonaxaton.net>
+ */
+
 // TODO: more NaN checking
 
+/**
+ * Creates a new complex number of the form a + bi
+ * @constructor
+ * @param {Number} real The real part of the complex number. (default 0)
+ * @param {Number} imag The imaginary part of the complex number. (default 0)
+ */
 function Complex(real, imag) {
+  /** @private */
+  this.real = real;
+  /** @private */
+  this.imag = imag;
+
   if (real === undefined)
     this.real = 0;
-  else
-    this.real = real;
   if (imag === undefined)
     this.imag = 0;
-  else
-    this.imag = imag;
 
+  /**
+   * Sets/gets the real part of this complex number.
+   * @param {Number} real The new value of this complex number's real part. If not given the current value is returned.
+   * @returns {Number}
+   */
   this.re = function(real) {
     if (real === undefined)
       return this.real;
@@ -17,6 +33,11 @@ function Complex(real, imag) {
     this.calcPolar();
   };
 
+  /**
+   * Sets/gets the imaginary part of this complex number.
+   * @param {Number} imag The new value of this complex number's imaginary part. If not given the current value is returned.
+   * @returns {Number}
+   */
   this.im = function(imag) {
     if (imag === undefined)
       return this.imag;
@@ -24,9 +45,15 @@ function Complex(real, imag) {
     this.calcPolar();
   };
 
+  /**
+   * Pre-calculates the polar form of this complex number.
+   * @private
+   */
   this.calcPolar = function() {
     if (this.real !== null && this.imag !== null) {
+      /** @private */
       this.abs = Math.sqrt(this.real * this.real + this.imag * this.imag);
+      /** @private */
       this.arg = Math.atan2(this.imag, this.real);
     }
   };
@@ -119,10 +146,31 @@ function Complex(real, imag) {
 
   this.calcPolar();
 }
+
+/**
+ * A special Complex value representing Not a Number.
+ * @type Complex
+ * @static
+ */
 Complex.NaN = new Complex(Number.NaN, Number.NaN);
+
+/**
+ * Tests if the given complex number is NaN or not
+ * @param {Complex} z
+ * @returns {boolean} true if the given number is NaN
+ * @static
+ */
 Complex.isNaN = function(z) {
   return Number.isNaN(z.real) || Number.isNaN(z.imag);
 };
+
+/**
+ *
+ * @param {Number} r
+ * @param {Number} t
+ * @returns {Complex}
+ * @static
+ */
 Complex.fromPolar = function(r, t) {
   var z = new Complex(null, null);
   z.real = r * Math.cos(t);
