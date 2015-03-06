@@ -24,11 +24,16 @@
 #graph .axis text {
     fill: hsl(0, 0%, 40%);
     font-family: 'Book Antiqua', 'Lora', serif;
-    font-size: 14px;
+    font-size: 10pt;
 }
 
 #graph .axis .tick text tspan.math {
     font-weight: bold;
+}
+
+#graph .control-point-display {
+    font-family: 'Book Antiqua', 'Lora', serif;
+    font-size: 12pt;
 }
 
 #funcDescrip {

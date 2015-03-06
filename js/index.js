@@ -105,7 +105,7 @@ $(function() {
   margin.x = margin.left + margin.right;
   margin.y = margin.top + margin.bottom;
 
-  svg = svg.append('g').attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
+  var graph = svg.append('g').attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
   var lines;
   var func;
@@ -147,7 +147,7 @@ $(function() {
           .scale(xScale)
           .orient('bottom')
           .tickSize(-gh);
-  svg.append('g')
+  graph.append('g')
           .attr('class', 'axis real-axis')
           .attr('transform', 'translate(0, ' + gh + ')')
           .call(xAxis);
@@ -155,11 +155,11 @@ $(function() {
           .scale(yScale)
           .orient('left')
           .tickSize(-gw);
-  svg.append('g')
+  graph.append('g')
           .attr('class', 'axis imag-axis')
           .call(yAxis);
 
-  svg.append('g')
+  graph.append('g')
           .attr('class', 'func-points');
 
   function drawData() {
@@ -167,7 +167,7 @@ $(function() {
             .domain(d3.range(0, lines.length, lines.length / 6))
             .range(['#d62728', '#ff7f0e', '#2ca02c', '#17becf', '#1f77b4', '#9467bd']);
 
-    var segments = svg.select('.func-points').selectAll('.data-segment').data(lines);
+    var segments = graph.select('.func-points').selectAll('.data-segment').data(lines);
 
     var newSegs = segments.enter()
             .append('g')
@@ -204,12 +204,17 @@ $(function() {
 
     segments.exit().remove();
 
-    svg.selectAll('.control-point')
+    graph.selectAll('.control-point')
             .attr('cx', function(d) {
               return xScale(d.pt.re());
             })
             .attr('cy', function(d) {
               return yScale(d.pt.im());
+            });
+
+    svg.selectAll('.control-point-display')
+            .html(function(d) {
+              return d.name + ': ' + d.pt.toString();
             });
   }
 
@@ -221,15 +226,27 @@ $(function() {
     $('#funcDescrip').text('\\[' + getFuncDescrip(func) + '\\]');
     updateTex();
 
+    var ctrlPts = [
+      {
+        pt: start,
+        name: 'z<tspan baseline-shift="sub" font-size="8pt">0</tspan>'
+      },
+      {
+        pt: factor,
+        name: 'a'
+      }
+    ];
+    ctrlPts.forEach(function(curr) {
+      curr.dragging = false;
+    });
+
     var colorScale = d3.scale.category10()
             .domain(d3.range(2));
     var sizeScale = d3.scale.ordinal()
             .domain(d3.range(2))
             .range([4, 6]);
-    svg.selectAll('.control-point')
-            .data([start, factor].map(function(curr) {
-              return { pt: curr, dragging: false };
-            }))
+    graph.selectAll('.control-point')
+            .data(ctrlPts)
             .enter()
             .append('circle')
             .attr('class', 'control-point')
@@ -272,6 +289,22 @@ $(function() {
                     .on('dragend', function(d) {
                       d.dragging = false;
                     }));
+
+    svg.append('g')
+            .attr('class', 'control-point-displays')
+            .attr('transform', 'translate(' + 2 + ', ' + 14 + ')')
+            .selectAll('.control-point-display')
+            .data(ctrlPts)
+            .enter()
+            .append('text')
+            .attr('class', 'control-point-display')
+            .attr('x', 0)
+            .attr('y', function(d, i) {
+              return i * 20;
+            })
+            .attr('fill', function(d, i) {
+              return colorScale(i);
+            });
 
     calcData();
     drawData();
