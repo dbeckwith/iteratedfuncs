@@ -90,7 +90,7 @@ $(function() {
     this.pwr = function(z) {
       if (this.abs === 0)
         return Complex.NaN;
-      return Complex.fromPolar(Math.pow(this.abs, z.real) * Math.exp(-this.arg * z.imag), z.imag * Math.log(abs) + z.real * this.arg);
+      return Complex.fromPolar(Math.pow(this.abs, z.real) * Math.exp(-this.arg * z.imag), z.imag * Math.log(this.abs) + z.real * this.arg);
     };
 
     this.exp = function() {
@@ -138,6 +138,7 @@ $(function() {
     return z;
   };
 
+  // TODO: handle NaNs better
   var functions = [
     {
       f: function(z, a) {
@@ -173,22 +174,6 @@ $(function() {
     },
     {
       f: function(z, a) {
-        return z.pwr(new Complex(3)).add(a);
-      },
-      start: new Complex(0),
-      factor: new Complex(0),
-      descrip: 'z^3 + a'
-    },
-    {
-      f: function(z, a) {
-        return z.pwr(new Complex(4)).add(a);
-      },
-      start: new Complex(0),
-      factor: new Complex(0),
-      descrip: 'z^4 + a'
-    },
-    {
-      f: function(z, a) {
         return a.mult(z.sin());
       },
       start: new Complex(1),
@@ -221,8 +206,21 @@ $(function() {
     }
   ];
   function getFuncDescrip(func) {
-    return '\\[f\\!\\left(z\\right) = ' + func.descrip + '\\]';
+    return 'f\\!\\left(z\\right) = ' + func.descrip + '';
   }
+
+  // TODO: lay out function radios better
+  functions.forEach(function(func, i) {
+    $('#funcChooser').append('\n\
+<label class="radio-inline">\n\
+  <input type="radio" name="funcSelector" value="' + i + '">\n\
+  \\(' + getFuncDescrip(func) + '\\)\n\
+</label>');
+  });
+  $('#funcChooser input:first').prop('checked', true);
+  $('#funcChooser input').change(function() {
+    setFunction(+$(this).val());
+  });
 
   var gw = 500;
   var gh = 500;
@@ -243,9 +241,9 @@ $(function() {
   svg = svg.append('g').attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
   var lines;
-  var func = functions[0];
-  var start = func.start;
-  var factor = func.factor;
+  var func;
+  var start;
+  var factor;
   function calcData() {
     lines = [];
     var z = start;
@@ -262,7 +260,6 @@ $(function() {
       lines.push({ 'prev': prev, 'curr': z });
     }
   }
-  calcData();
 
   var xScale = d3.scale.linear()
           .domain([-graphExtent, graphExtent])
@@ -300,14 +297,7 @@ $(function() {
 
   // TODO: make factor point and start point both be control points
   svg.append('circle')
-          .datum(factor)
           .attr('class', 'handle-point')
-          .attr('cx', function(d) {
-            return xScale(d.re());
-          })
-          .attr('cy', function(d) {
-            return yScale(d.im());
-          })
           .attr('r', 7)
           .attr('opacity', 0.7)
           .call(d3.behavior.drag()
@@ -315,8 +305,7 @@ $(function() {
                     return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
                   })
                   .on('drag', function(d) {
-                    d.re(dragXScale.invert(d3.event.x));
-                    d.im(dragYScale.invert(d3.event.y));
+                    d3.select(this).datum(factor = new Complex(dragXScale.invert(d3.event.x), dragYScale.invert(d3.event.y)));
                     calcData();
                     drawData();
                   }));
@@ -331,7 +320,7 @@ $(function() {
     var newSegs = segments.enter()
             .append('g')
             .attr('class', 'data-segment')
-            .attr('opacity', 0.5);
+            .attr('opacity', 0.3);
     newSegs.append('line')
             .attr('class', 'data-line')
             .attr('x1', 0)
@@ -371,7 +360,29 @@ $(function() {
               return yScale(d.im());
             });
   }
-  drawData();
+
+  function setFunction(i) {
+    func = functions[i];
+    start = func.start;
+    factor = func.factor;
+
+    $('#funcDescrip').text('\\[' + getFuncDescrip(func) + '\\]');
+    updateTex();
+
+    svg.select('.handle-point')
+            .datum(factor)
+            .attr('cx', function(d) {
+              return xScale(d.re());
+            })
+            .attr('cy', function(d) {
+              return yScale(d.im());
+            });
+
+    calcData();
+    drawData();
+  }
+
+  setFunction(0);
 
   $('#graph .imag-axis .tick text').html(function(index, old) {
     function sp(t) {
@@ -388,8 +399,5 @@ $(function() {
       return sp('-') + i;
     return sp(n) + i;
   });
-
-  $('#funcDescrip').text(getFuncDescrip(func));
-  updateTex();
 
 });
