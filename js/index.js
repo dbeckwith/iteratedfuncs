@@ -159,6 +159,26 @@ $(function() {
           .attr('class', 'axis imag-axis')
           .call(yAxis);
 
+
+  var circleScale = d3.scale.linear()
+          .domain([0, graphExtent])
+          .range([0, gw / 2]);
+  var circleTicks = d3.range(1, graphExtent * 2 + 1);
+  graph.selectAll('.tick-circle')
+          .data(circleTicks)
+          .enter()
+          .append('circle')
+          .attr('class', 'tick-circle')
+          .attr('cx', xScale(0))
+          .attr('cy', yScale(0))
+          .attr('r', function(d) {
+            return circleScale(d / 2);
+          })
+          .attr('fill', 'none')
+          .attr('stroke', function(d, i) {
+            return 'hsla(0, 0%, 0%, ' + (i % 2 === 0 ? 0.1 : 0.2) + ')';
+          });
+
   graph.append('g')
           .attr('class', 'func-points');
 
@@ -214,7 +234,24 @@ $(function() {
 
     svg.selectAll('.control-point-display')
             .html(function(d) {
-              return d.name + ': ' + d.pt.toString();
+              var s = '';
+              s += '<tspan class="math">';
+              s += d.name;
+              s += '</tspan>';
+              s += ': ';
+              s += '<tspan x="15" dy="1.2em">';
+              s += d.pt.re();
+              s += ' + ';
+              s += d.pt.im();
+              s += '<tspan class="math imag">i</tspan>';
+              s += '</tspan>';
+              s += '<tspan x="15" dy="1.2em">';
+              s += d.pt.abs();
+              s += ' &times; exp(';
+              s += d.pt.arg() * 180 / Math.PI;
+              s += '&deg; <tspan class="math imag">i</tspan>)';
+              s += '</tspan>';
+              return  s;
             });
   }
 
@@ -292,7 +329,7 @@ $(function() {
 
     svg.append('g')
             .attr('class', 'control-point-displays')
-            .attr('transform', 'translate(' + 2 + ', ' + 14 + ')')
+            .attr('transform', 'translate(4, 14)')
             .selectAll('.control-point-display')
             .data(ctrlPts)
             .enter()
@@ -300,7 +337,7 @@ $(function() {
             .attr('class', 'control-point-display')
             .attr('x', 0)
             .attr('y', function(d, i) {
-              return i * 20;
+              return (i * 3.8) + 'em';
             })
             .attr('fill', function(d, i) {
               return colorScale(i);
@@ -317,7 +354,7 @@ $(function() {
     function sp(t) {
       return '<tspan>' + t + '</tspan>';
     }
-    var i = '<tspan class="math">i</tspan>';
+    var i = '<tspan class="math imag">i</tspan>';
     var n = parseInt(old);
     if (n === 0) {
       return sp(n);

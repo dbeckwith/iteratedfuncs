@@ -45,6 +45,22 @@ function Complex(real, imag) {
     this.calcPolar();
   };
 
+  this.abs = function(rad) {
+    if (rad === undefined)
+      return this.rad;
+    this.rad = rad;
+    this.re = this.rad * Math.cos(this.ang);
+    this.im = this.rad * Math.sin(this.ang);
+  };
+
+  this.arg = function(ang) {
+    if (ang === undefined)
+      return this.ang;
+    this.ang = ang;
+    this.re = this.rad * Math.cos(this.ang);
+    this.im = this.rad * Math.sin(this.ang);
+  };
+
   /**
    * Pre-calculates the polar form of this complex number.
    * @private
@@ -52,9 +68,9 @@ function Complex(real, imag) {
   this.calcPolar = function() {
     if (this.real !== null && this.imag !== null) {
       /** @private */
-      this.abs = Math.sqrt(this.real * this.real + this.imag * this.imag);
+      this.rad = Math.sqrt(this.real * this.real + this.imag * this.imag);
       /** @private */
-      this.arg = Math.atan2(this.imag, this.real);
+      this.ang = Math.atan2(this.imag, this.real);
     }
   };
 
@@ -105,13 +121,13 @@ function Complex(real, imag) {
   };
 
   this.sqrt = function() {
-    return new Complex(Math.sqrt((this.abs + this.real) / 2), (this.imag < 0 ? -1 : 1) * (Math.sqrt(this.abs - this.real) / 2));
+    return new Complex(Math.sqrt((this.rad + this.real) / 2), (this.imag < 0 ? -1 : 1) * (Math.sqrt(this.rad - this.real) / 2));
   };
 
   this.pwr = function(z) {
-    if (this.abs === 0)
+    if (this.rad === 0)
       return Complex.NaN;
-    return Complex.fromPolar(Math.pow(this.abs, z.real) * Math.exp(-this.arg * z.imag), z.imag * Math.log(this.abs) + z.real * this.arg);
+    return Complex.fromPolar(Math.pow(this.rad, z.real) * Math.exp(-this.ang * z.imag), z.imag * Math.log(this.rad) + z.real * this.ang);
   };
 
   this.exp = function() {
@@ -119,9 +135,9 @@ function Complex(real, imag) {
   };
 
   this.log = function() {
-    if (this.abs === 0)
+    if (this.rad === 0)
       return Complex.NaN;
-    return new Complex(Math.log(this.abs), this.arg);
+    return new Complex(Math.log(this.rad), this.ang);
   };
 
   this.sin = function() {
@@ -149,8 +165,8 @@ function Complex(real, imag) {
     var z = new Complex(null, null);
     z.real = this.real;
     z.imag = this.imag;
-    z.abs = this.abs;
-    z.arg = this.arg;
+    z.rad = this.rad;
+    z.ang = this.ang;
     return z;
   };
 
@@ -185,7 +201,7 @@ Complex.fromPolar = function(r, t) {
   var z = new Complex(null, null);
   z.real = r * Math.cos(t);
   z.imag = r * Math.sin(t);
-  z.abs = r;
-  z.arg = t;
+  z.rad = r;
+  z.ang = t;
   return z;
 };
