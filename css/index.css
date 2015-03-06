@@ -28,7 +28,7 @@
 }
 
 #graph .axis .tick text tspan.math {
-    font-style: italic;
+    font-weight: bold;
 }
 
 #funcDescrip {
