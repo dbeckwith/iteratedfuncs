@@ -237,7 +237,8 @@ $(function() {
   var w = $('#graph').width();
   var h = $('#graph').height();
 
-  var margin = { bottom: 35, left: w / 2 - gw / 2, top: 15, right: w / 2 - gw / 2 };
+  var margin = { bottom: h / 2 - gh / 2 + 10, left: w / 2 - gw / 2, right: w / 2 - gw / 2 };
+  margin.top = h - gh - margin.bottom;
   margin.x = margin.left + margin.right;
   margin.y = margin.top + margin.bottom;
 
@@ -273,6 +274,14 @@ $(function() {
   var yScale = d3.scale.linear()
           .domain([-graphExtent, graphExtent])
           .range([gh, 0]);
+  var dragXScale = d3.scale.linear()
+          .domain([xScale.invert(-margin.left), xScale.invert(gw + margin.right)])
+          .range([-margin.left, gw + margin.right])
+          .clamp(true);
+  var dragYScale = d3.scale.linear()
+          .domain([yScale.invert(-margin.top), yScale.invert(gh + margin.bottom)])
+          .range([-margin.top, gh + margin.bottom])
+          .clamp(true);
 
   var xAxis = d3.svg.axis()
           .scale(xScale)
@@ -295,9 +304,8 @@ $(function() {
             return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
           })
           .on('drag', function(d) {
-            // TODO: can drag off screen
-            factor.re(xScale.invert(d3.event.x));
-            factor.im(yScale.invert(d3.event.y));
+            factor.re(dragXScale.invert(d3.event.x));
+            factor.im(dragYScale.invert(d3.event.y));
             calcData();
             drawData();
           });
