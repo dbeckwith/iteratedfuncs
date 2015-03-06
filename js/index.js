@@ -6,8 +6,6 @@ function updateTex() {
 
 $(function() {
 
-  // TODO: make start point separate from rest of graph, then can also be a control point in same class as factor pt
-
   function Complex(real, imag) {
     if (real === undefined)
       this.real = 0;
@@ -244,12 +242,11 @@ $(function() {
 
   svg = svg.append('g').attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 
-  var pts, lines;
+  var lines;
   var func = functions[0];
   var start = func.start;
   var factor = func.factor;
   function calcData() {
-    pts = [];
     lines = [];
     var z = start;
     var prev = null;
@@ -260,7 +257,6 @@ $(function() {
 //        console.log('converge');
         break;
       }
-      pts.push(z);
       prev = z;
       z = func.f(z, factor);
       lines.push({ 'prev': prev, 'curr': z });
@@ -299,74 +295,81 @@ $(function() {
           .attr('class', 'axis imag-axis')
           .call(yAxis);
 
-  var drag = d3.behavior.drag()
-          .origin(function(d) {
-            return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
+  svg.append('g')
+          .attr('class', 'func-points');
+
+  // TODO: make factor point and start point both be control points
+  svg.append('circle')
+          .datum(factor)
+          .attr('class', 'handle-point')
+          .attr('cx', function(d) {
+            return xScale(d.re());
           })
-          .on('drag', function(d) {
-            factor.re(dragXScale.invert(d3.event.x));
-            factor.im(dragYScale.invert(d3.event.y));
-            calcData();
-            drawData();
-          });
+          .attr('cy', function(d) {
+            return yScale(d.im());
+          })
+          .attr('r', 7)
+          .attr('opacity', 0.7)
+          .call(d3.behavior.drag()
+                  .origin(function(d) {
+                    return { 'x': xScale(d.re()), 'y': yScale(d.im()) };
+                  })
+                  .on('drag', function(d) {
+                    d.re(dragXScale.invert(d3.event.x));
+                    d.im(dragYScale.invert(d3.event.y));
+                    calcData();
+                    drawData();
+                  }));
 
   function drawData() {
-    svg.selectAll('.data-line').remove();
-    svg.selectAll('.data-point').remove();
-    svg.selectAll('.handle-point').remove();
     var colorScale = d3.scale.linear()
-            .domain(d3.range(0, pts.length, pts.length / 6))
+            .domain(d3.range(0, lines.length, lines.length / 6))
             .range(['#d62728', '#ff7f0e', '#2ca02c', '#17becf', '#1f77b4', '#9467bd']);
-    svg.selectAll('.data-line')
-            .data(lines)
-            .enter()
-            .append('line')
+
+    var segments = svg.select('.func-points').selectAll('.data-segment').data(lines);
+
+    var newSegs = segments.enter()
+            .append('g')
+            .attr('class', 'data-segment')
+            .attr('opacity', 0.5);
+    newSegs.append('line')
             .attr('class', 'data-line')
-            .attr('x1', function(d, i) {
-              return xScale(d.prev.re());
+            .attr('x1', 0)
+            .attr('y1', 0);
+    newSegs.append('circle')
+            .attr('class', 'data-point')
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('r', 3);
+
+    segments
+            .attr('transform', function(d) {
+              return 'translate(' + xScale(d.curr.re()) + ', ' + yScale(d.curr.im()) + ')';
+            });
+    segments.select('.data-line')
+            .attr('x2', function(d) {
+              return xScale(d.prev.re()) - xScale(d.curr.re());
             })
-            .attr('y1', function(d, i) {
-              return yScale(d.prev.im());
-            })
-            .attr('x2', function(d, i) {
-              return xScale(d.curr.re());
-            })
-            .attr('y2', function(d, i) {
-              return yScale(d.curr.im());
+            .attr('y2', function(d) {
+              return yScale(d.prev.im()) - yScale(d.curr.im());
             })
             .attr('stroke', function(d, i) {
               return colorScale(i);
-            })
-            .attr('opacity', 0.5);
-    svg.selectAll('.data-point')
-            .data(pts)
-            .enter()
-            .append('circle')
-            .attr('class', 'data-point')
-            .attr('cx', function(d, i) {
-              return xScale(d.re());
-            })
-            .attr('cy', function(d, i) {
-              return yScale(d.im());
-            })
-            .attr('r', 3)
+            });
+    segments.select('.data-point')
             .attr('fill', function(d, i) {
               return colorScale(i);
-            })
-            .attr('opacity', 0.5);
-    svg.append('circle')
-            .datum(factor)
-            .attr('class', 'handle-point')
-            .attr('cx', function(d, i) {
+            });
+
+    segments.exit().remove();
+
+    svg.select('.handle-point')
+            .attr('cx', function(d) {
               return xScale(d.re());
             })
-            .attr('cy', function(d, i) {
+            .attr('cy', function(d) {
               return yScale(d.im());
-            })
-            .attr('r', 7)
-            .attr('opacity', 0.7);
-    svg.select('.handle-point')
-            .call(drag);
+            });
   }
   drawData();
 
