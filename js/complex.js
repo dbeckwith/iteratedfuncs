@@ -186,7 +186,7 @@ Complex.NaN = new Complex(Number.NaN, Number.NaN);
  * @static
  */
 Complex.isNaN = function(z) {
-  return Number.isNaN(z.real) || Number.isNaN(z.imag);
+  return isNaN(z.real) || isNaN(z.imag);
 };
 
 /**
